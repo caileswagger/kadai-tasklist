@@ -1,2 +1,0 @@
-class Talklist < ApplicationRecord
-end
