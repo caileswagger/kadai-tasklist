@@ -10,8 +10,12 @@ class TasksController < ApplicationController
   end
 
   def show
-    if @task.user_id != current_user.id
-      redirect_to root_url
+    if logged_in?
+      if @task.user_id != current_user.id
+        redirect_to root_url
+      end
+    else
+        redirect_to login_path
     end
   end
 
@@ -32,8 +36,12 @@ class TasksController < ApplicationController
   end
 
   def edit
-    if @task.user_id != current_user.id
-      redirect_to root_url
+    if logged_in?
+      if @task.user_id != current_user.id
+        redirect_to root_url
+      end
+    else
+        redirect_to login_path
     end
   end
 
