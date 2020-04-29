@@ -1,15 +1,13 @@
 class TasksController < ApplicationController
   before_action :login_check
   before_action :set_task, only: [:show, :edit, :update, :destroy]
+  before_action :id_check, only: [:show, :edit, :update, :destroy]
+  
   def index
-    @task = current_user.tasks.build  # form_with 用
     @tasks = current_user.tasks.order(id: :desc).page(params[:page])
   end
 
   def show
-    if @task.user_id != current_user.id
-      redirect_to root_url
-    end
   end
 
   def new
@@ -20,25 +18,18 @@ class TasksController < ApplicationController
     @task = current_user.tasks.build(task_params)
     if @task.save
       flash[:success] = 'メッセージを投稿しました。'
-      redirect_to root_url
+      redirect_to tasks_url
     else
       @tasks = current_user.tasks.order(id: :desc).page(params[:page])
       flash.now[:danger] = 'メッセージの投稿に失敗しました。'
-      render root_url
+      render :new
     end
   end
 
   def edit
-    if @task.user_id != current_user.id
-      redirect_to root_url
-    end
   end
 
   def update
-    if @task.user_id != current_user.id
-      redirect_to root_url
-    end
-      
     if @task.update(task_params)
       flash[:success] = 'Task は正常に更新されました'
       redirect_to @task
@@ -49,10 +40,6 @@ class TasksController < ApplicationController
   end
 
   def destroy
-    if @task.user_id != current_user.id
-        redirect_to root_url
-    end
-      
     @task.destroy
     flash[:success] = 'Task は正常に削除されました'
     redirect_to tasks_url
@@ -73,6 +60,13 @@ class TasksController < ApplicationController
   def login_check
     if !logged_in?
       redirect_to login_path
+    end
+  end
+  
+  # if two ids is defferent, redirect to root.
+  def id_check
+    if @task.user_id != current_user.id
+      redirect_to root_url
     end
   end
 end
