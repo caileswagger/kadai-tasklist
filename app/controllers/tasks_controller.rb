@@ -46,19 +46,35 @@ class TasksController < ApplicationController
   end
 
   def update
-    if @task.update(task_params)
-      flash[:success] = 'Task は正常に更新されました'
-      redirect_to @task
+    if logged_in?
+      if @task.user_id != current_user.id
+        redirect_to root_url
+      end
+      
+      if @task.update(task_params)
+        flash[:success] = 'Task は正常に更新されました'
+        redirect_to @task
+      else
+        flash.now[:danger] = 'Task は更新されませんでした'
+        render :edit
+      end
     else
-      flash.now[:danger] = 'Task は更新されませんでした'
-      render :edit
+        redirect_to root_url
     end
   end
 
   def destroy
-    @task.destroy
-    flash[:success] = 'Task は正常に削除されました'
-    redirect_to tasks_url
+    if logged_in?
+      if @task.user_id != current_user.id
+        redirect_to root_url
+      end
+      
+      @task.destroy
+      flash[:success] = 'Task は正常に削除されました'
+      redirect_to tasks_url
+    else
+      redirect_to root_url
+    end
   end
   
   private
