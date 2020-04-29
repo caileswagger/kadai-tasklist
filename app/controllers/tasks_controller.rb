@@ -1,21 +1,14 @@
 class TasksController < ApplicationController
+  before_action :login_check
   before_action :set_task, only: [:show, :edit, :update, :destroy]
   def index
-    if logged_in?
-      @task = current_user.tasks.build  # form_with 用
-      @tasks = current_user.tasks.order(id: :desc).page(params[:page])
-    else
-      redirect_to login_path
-    end
+    @task = current_user.tasks.build  # form_with 用
+    @tasks = current_user.tasks.order(id: :desc).page(params[:page])
   end
 
   def show
-    if logged_in?
-      if @task.user_id != current_user.id
-        redirect_to root_url
-      end
-    else
-        redirect_to login_path
+    if @task.user_id != current_user.id
+      redirect_to root_url
     end
   end
 
@@ -36,45 +29,33 @@ class TasksController < ApplicationController
   end
 
   def edit
-    if logged_in?
-      if @task.user_id != current_user.id
-        redirect_to root_url
-      end
-    else
-        redirect_to login_path
+    if @task.user_id != current_user.id
+      redirect_to root_url
     end
   end
 
   def update
-    if logged_in?
-      if @task.user_id != current_user.id
-        redirect_to root_url
-      end
+    if @task.user_id != current_user.id
+      redirect_to root_url
+    end
       
-      if @task.update(task_params)
-        flash[:success] = 'Task は正常に更新されました'
-        redirect_to @task
-      else
-        flash.now[:danger] = 'Task は更新されませんでした'
-        render :edit
-      end
+    if @task.update(task_params)
+      flash[:success] = 'Task は正常に更新されました'
+      redirect_to @task
     else
-        redirect_to root_url
+      flash.now[:danger] = 'Task は更新されませんでした'
+      render :edit
     end
   end
 
   def destroy
-    if logged_in?
-      if @task.user_id != current_user.id
+    if @task.user_id != current_user.id
         redirect_to root_url
-      end
-      
-      @task.destroy
-      flash[:success] = 'Task は正常に削除されました'
-      redirect_to tasks_url
-    else
-      redirect_to root_url
     end
+      
+    @task.destroy
+    flash[:success] = 'Task は正常に削除されました'
+    redirect_to tasks_url
   end
   
   private
@@ -86,5 +67,12 @@ class TasksController < ApplicationController
   # Strong Parameter
   def task_params
     params.require(:task).permit(:content, :status)
+  end
+  
+  # if not login status, redirect to login_path.
+  def login_check
+    if !logged_in?
+      redirect_to login_path
+    end
   end
 end
